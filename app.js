@@ -1,46 +1,58 @@
 const express = require('express');
+const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const passport = require('passport');
 
+// Passport Config
+require('./config/passport')(passport);
+
+// Load Routes
+const index = require('./routes/index');
+const auth = require('./routes/auth');
+
+// Load Keys
 const keys = require('./config/keys');
+
+// Map global promises
+mongoose.Promise = global.Promise;
+// Mongoose Connect
+mongoose.connect(keys.mongoURI, { useNewUrlParser: true })
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log(err));
 
 const app = express();
 
-// passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+// Handlebars Middleware
+app.engine('handlebars', exphbs({
+  defaultLayout: 'main'
+}));
+app.set('view engine', 'handlebars');
 
 app.use(cookieParser());
 app.use(session({
-  secret: 'secret12345',
+  secret: 'secret',
   resave: false,
-  saveUninitialized: true
-}))
+  saveUninitialized: false
+}));
 
-mongoose.Promise = global.Promise;
-mongoose.connect(keys.mongoURI, { useNewUrlParser: true })
-  .then(() => console.log('connected to mongodb server'))
-  .catch(err => console.log(err));
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-// passport config
-require('./config/passport')(passport);
+// Set global vars
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
 
-// load routes
-const auth = require('./routes/auth');
-
+// Use Routes
+app.use('/', index);
 app.use('/auth', auth);
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-
-app.get('/dashboard', (req, res) => {
-  res.send('Dashboard');
-});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`server running at http://localhost:${port}`);
+  console.log(`Server started on port ${port}`)
 });
