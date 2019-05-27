@@ -7,6 +7,7 @@ const Story = require('../models/Story');
 router.get('/', (req, res) => {
   Story.find({ status: 'public' })
     .populate('user')
+    .sort({ date: 'desc' })
     .then(stories => {
       res.render('stories/index', { stories });
     })
@@ -40,6 +41,7 @@ router.post('/', ensureAuthenticated, (req, res) => {
 router.get('/show/:id', (req, res) => {
   Story.findOne({ _id: req.params.id })
     .populate('user')
+    .populate('comments.commentUser')
     .then(story => {
       res.render('stories/show', { story });
     })
@@ -49,7 +51,11 @@ router.get('/show/:id', (req, res) => {
 router.get('/edit/:id', ensureAuthenticated, (req, res) => {
   Story.findOne({ _id: req.params.id })
     .then(story => {
-      res.render('stories/edit', { story });
+      if (story.user != req.user.id) {
+        res.redirect('/stories');
+      } else {
+        res.render('stories/edit', { story });
+      }
     })
     .catch(err => console.log(err));
 });
