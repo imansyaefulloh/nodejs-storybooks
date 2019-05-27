@@ -46,4 +46,12 @@ router.get('/show/:id', (req, res) => {
     .catch(err => console.log(err));
 });
 
+router.get('/edit/:id', ensureAuthenticated, (req, res) => {
+  Story.findOne({ _id: req.params.id })
+    .then(story => {
+      res.render('stories/edit', { story });
+    })
+    .catch(err => console.log(err));
+});
+
 module.exports = router;

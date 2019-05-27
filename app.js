@@ -7,7 +7,12 @@ const session = require('express-session');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 
-const { truncate, stripTags, formatDate } = require('./helpers/hbs');
+const {
+  truncate,
+  stripTags,
+  formatDate,
+  select
+} = require('./helpers/hbs');
 
 // Passport Config
 require('./config/passport')(passport);
@@ -38,7 +43,8 @@ app.engine('handlebars', exphbs({
   helpers: {
     truncate,
     stripTags,
-    formatDate
+    formatDate,
+    select
   },
   defaultLayout: 'main'
 }));
