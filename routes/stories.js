@@ -54,4 +54,24 @@ router.get('/edit/:id', ensureAuthenticated, (req, res) => {
     .catch(err => console.log(err));
 });
 
+router.put('/:id', ensureAuthenticated, (req, res) => {
+  Story.findOne({ _id: req.params.id })
+    .then(story => {
+      const { title, body, status } = req.body;
+      const allowComments = req.body.allowComments ? true : false;
+
+      story.title = title;
+      story.body = body;
+      story.status = status;
+      story.allowComments = allowComments;
+
+      story.save()
+        .then(story => {
+          res.redirect('/dashboard');
+        })
+        .catch(err => console.log(err));
+    })
+    .catch(err => console.log(err));
+});
+
 module.exports = router;
