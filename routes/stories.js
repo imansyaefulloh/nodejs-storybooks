@@ -74,4 +74,12 @@ router.put('/:id', ensureAuthenticated, (req, res) => {
     .catch(err => console.log(err));
 });
 
+router.delete('/:id', (req, res) => {
+  Story.remove({ _id: req.params.id })
+    .then(() => {
+      res.redirect('/dashboard');
+    })
+    .catch(err => console.log(err));
+});
+
 module.exports = router;
