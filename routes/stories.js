@@ -74,10 +74,28 @@ router.put('/:id', ensureAuthenticated, (req, res) => {
     .catch(err => console.log(err));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', ensureAuthenticated, (req, res) => {
   Story.remove({ _id: req.params.id })
     .then(() => {
       res.redirect('/dashboard');
+    })
+    .catch(err => console.log(err));
+});
+
+router.post('/comment/:id', ensureAuthenticated, (req, res) => {
+  Story.findOne({ _id: req.params.id })
+    .then(story => {
+      const newComment = {
+        commentBody: req.body.commentBody,
+        commentUser: req.user.id
+      }
+
+      story.comments.unshift(newComment);
+      story.save()
+        .then(story => {
+          res.redirect(`/stories/show/${story.id}`);
+        })
+        .catch(err => console.log(err));
     })
     .catch(err => console.log(err));
 });
